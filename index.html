@@ -1,192 +1,356 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>彰基胸腔內科門診 Google Calendar</title>
-<style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>彰基胸腔內科門診預約日曆產生器</title>
+  <meta name="description" content="快速建立彰基胸腔內科門診 Google Calendar 行事曆活動">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #1a73e8;
+      --primary-hover: #1557b0;
+      --accent-color: #34a853;
+      --accent-hover: #2d8e47;
+      --bg-color: #f8f9fa;
+      --card-bg: #ffffff;
+      --text-color: #202124;
+      --subtext-color: #5f6368;
+      --border-color: #dadce0;
+      --input-bg: #ffffff;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --radius: 12px;
+    }
 
-/* 設定根元素基礎字體放大 2 倍 (原本預設 16px -> 放大為 32px) */
-html {
-  font-size: 200%; 
-}
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary-color: #8ab4f8;
+        --primary-hover: #aecbfa;
+        --accent-color: #81c995;
+        --accent-hover: #a8dab5;
+        --bg-color: #121212;
+        --card-bg: #1e1e1e;
+        --text-color: #e8eaed;
+        --subtext-color: #9aa0a6;
+        --border-color: #3c4043;
+        --input-bg: #2d2d2d;
+        --shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      }
+    }
 
-/* 將所有解析度下的 body 邊距皆設為 0 */
-body{
-  margin:0;
-  padding:0;
-  background:#fff;
-  font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif;
-}
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-/* 卡片滿版貼邊，邊距採用 rem 隨 2 倍基礎字體放大 */
-.card{
-  width:100%;
-  max-width:none;
-  margin:0;
-  background:#fff;
-  border-radius:0;
-  box-shadow:none;
-  min-height:100vh;
-  padding: 1rem max(0.8rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(0.8rem, env(safe-area-inset-left));
-}
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
 
-/* 標題：基於放大後的字體再設定相對比例 */
-h2{
-  text-align:center;
-  color:#1565c0;
-  margin:0 0 0.6em;
-  font-size: 1.5rem; /* 32px * 1.5 = 48px */
-}
+    .container {
+      width: 100%;
+      max-width: 480px;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      border: 1px solid var(--border-color);
+    }
 
-/* 標籤文字 */
-label{
-  display:block;
-  margin:0.8em 0 0.3em;
-  font-weight:700;
-  font-size: 1rem; /* 32px */
-}
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
 
-/* 輸入框、下拉選單、文字區域與按鈕 */
-input, select, textarea, button {
-  font-size: 1rem; /* 32px */
-  padding: 0.6em;
-  border-radius: 0.5em;
-  font-family: inherit;
-}
+    .header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: var(--primary-color);
+      font-weight: 700;
+    }
 
-input, select, textarea {
-  width:100%;
-  border:1px solid #ccc;
-}
+    .header p {
+      margin: 6px 0 0;
+      font-size: 0.875rem;
+      color: var(--subtext-color);
+    }
 
-textarea{
-  min-height: 5em;
-}
+    .form-group {
+      margin-bottom: 18px;
+    }
 
-.quick{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap: 0.5em;
-  margin-top: 0.5em;
-}
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      color: var(--text-color);
+    }
 
-button{
-  border:0;
-  cursor:pointer;
-  transition:.2s;
-}
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      font-size: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      font-family: inherit;
+    }
 
-button:active{transform:scale(.97)}
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
+    }
 
-.quick button{background:#43a047;color:#fff}
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
 
-.today{
-  background:#757575;
-  color:#fff;
-  width:100%;
-  margin-top: 0.5em;
-}
+    .btn-group {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
 
-.mainBtn{
-  position:sticky;
-  bottom:0.5rem;
-  width:100%;
-  margin-top: 1.2em;
-  background:#1976d2;
-  color:#fff;
-  font-weight:bold;
-  font-size: 1.15rem; /*約 36.8px */
-  padding: 0.75em;
-}
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      font-family: inherit;
+    }
 
-/* 資訊文字區塊 */
-.info{
-  font-size: 0.85rem; /*約 27.2px */
-  color:#666;
-  line-height:1.8;
-  margin-top: 1em;
-}
+    button:active {
+      transform: scale(0.98);
+    }
 
-@media(max-width:480px){.quick{grid-template-columns:1fr}}
+    .btn-quick {
+      background-color: var(--accent-color);
+      color: #fff;
+    }
 
-@media(prefers-color-scheme:dark){
-  body, .card{background:#222;color:#fff}
-  input,select,textarea{background:#333;color:#fff;border-color:#555}
-  .info{color:#bbb}
-}
-</style>
+    .btn-quick:hover {
+      background-color: var(--accent-hover);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .btn-quick {
+        color: #121212;
+      }
+    }
+
+    .btn-today {
+      background-color: var(--subtext-color);
+      color: #fff;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .btn-main {
+      width: 100%;
+      padding: 14px;
+      background-color: var(--primary-color);
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-top: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .btn-main {
+        color: #121212;
+      }
+    }
+
+    .btn-main:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .preview-card {
+      margin-top: 20px;
+      padding: 12px 16px;
+      background-color: var(--bg-color);
+      border-radius: 8px;
+      font-size: 0.875rem;
+      color: var(--subtext-color);
+      border-left: 4px solid var(--primary-color);
+    }
+
+    .preview-card div {
+      margin-bottom: 4px;
+    }
+
+    .preview-card div:last-child {
+      margin-bottom: 0;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.75rem;
+      color: var(--subtext-color);
+    }
+  </style>
 </head>
 <body>
-<div class="card">
-<h2>彰基胸腔內科門診</h2>
-<label>日期</label>
-<input type="date" id="date">
-<button class="today" onclick="todayDate()">今天</button>
 
-<label>快速日期遞延</label>
-<div class="quick">
-<button onclick="changeDate(7)">+一週</button>
-<button onclick="changeDate(28)">+一個月</button>
-<button onclick="changeDate(56)">+兩個月</button>
-<button onclick="changeDate(84)">+三個月</button>
-</div>
+<div class="container">
+  <div class="header">
+    <h1>彰基胸腔內科門診</h1>
+    <p>快速新增門診時間至 Google 行事曆</p>
+  </div>
 
-<label>門診時段</label>
-<select id="session">
-<option value="AM">上午 08:30-12:00</option>
-<option value="PM">下午 14:00-17:00</option>
-<option value="NIGHT">夜間 18:00-21:00</option>
-</select>
+  <div class="form-group">
+    <label for="date">看診日期</label>
+    <input type="date" id="date">
+    <button class="btn-today" onclick="todayDate()">設定為今天</button>
+    
+    <label style="margin-top: 12px;">快速推算日期</label>
+    <div class="btn-group">
+      <button class="btn-quick" onclick="changeDate(7)">+1 週 (7天)</button>
+      <button class="btn-quick" onclick="changeDate(28)">+4 週 (28天)</button>
+      <button class="btn-quick" onclick="changeDate(56)">+8 週 (56天)</button>
+      <button class="btn-quick" onclick="changeDate(84)">+12 週 (84天)</button>
+    </div>
+  </div>
 
-<label>診間</label>
-<input type="number" inputmode="numeric" min="1" max="99" id="room">
+  <div class="form-group">
+    <label for="session">門診時段</label>
+    <select id="session">
+      <option value="AM">上午 (08:30 - 12:00)</option>
+      <option value="PM">下午 (14:00 - 17:00)</option>
+      <option value="NIGHT">夜間 (18:00 - 21:00)</option>
+    </select>
+  </div>
 
-<label>備註</label>
-<textarea id="note"></textarea>
+  <div class="form-group">
+    <label for="room">診間號碼</label>
+    <input type="number" inputmode="numeric" min="1" max="99" id="room" placeholder="例如：25" oninput="updatePreview()">
+  </div>
 
-<button class="mainBtn" onclick="createCalendar()">建立 Google Calendar 活動</button>
-<div class="info"><b>活動：</b>彰基胸腔內科門診<br><b>地點：</b>XX診間</div>
+  <div class="form-group">
+    <label for="note">備註說明</label>
+    <textarea id="note" placeholder="可填寫注意事項或醫師名稱..."></textarea>
+  </div>
+
+  <button class="btn-main" onclick="createCalendar()">加入 Google Calendar</button>
+
+  <div class="preview-card">
+    <div><strong>活動名稱：</strong>彰基胸腔內科門診</div>
+    <div><strong>地點：</strong><span id="preview-location">-- 診間</span></div>
+  </div>
+
+  <div class="footer">
+    Powered by GitHub Pages
+  </div>
 </div>
 
 <script>
-const room=document.getElementById("room");
-if(localStorage.room) room.value=localStorage.room;
-todayDate();
+  const roomInput = document.getElementById("room");
+  const dateInput = document.getElementById("date");
+  const sessionSelect = document.getElementById("session");
+  const noteInput = document.getElementById("note");
+  const previewLocation = document.getElementById("preview-location");
 
-function pad(n){return String(n).padStart(2,"0")}
-function formatDateInput(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
-function todayDate(){date.value=formatDateInput(new Date())}
-function changeDate(days){
- let d=date.value?new Date(date.value):new Date();
- d.setDate(d.getDate()+days);
- date.value=formatDateInput(d);
-}
-function calFmt(d){
- return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+"T"+pad(d.getHours())+pad(d.getMinutes())+"00";
-}
-function getClinicTime(base){
- let s=new Date(base),e=new Date(base);
- switch(session.value){
- case "AM":s.setHours(8,30,0);e.setHours(12,0,0);break;
- case "PM":s.setHours(14,0,0);e.setHours(17,0,0);break;
- default:s.setHours(18,0,0);e.setHours(21,0,0);
- }
- return {s,e};
-}
-function createCalendar(){
- if(!date.value){alert("請選擇日期");return;}
- if(!room.value){alert("請輸入診間");return;}
- localStorage.room=room.value;
- let t=getClinicTime(new Date(date.value));
- let url="https://calendar.google.com/calendar/render?action=TEMPLATE"
- +"&text="+encodeURIComponent("彰基胸腔內科門診")
- +"&dates="+calFmt(t.s)+"/"+calFmt(t.e)
- +"&location="+encodeURIComponent(room.value+"診間")
- +"&details="+encodeURIComponent(note.value);
- window.open(url,"_blank");
-}
+  // 初始化診間紀錄與日期
+  if (localStorage.getItem("room")) {
+    roomInput.value = localStorage.getItem("room");
+  }
+  todayDate();
+  updatePreview();
+
+  function pad(n) { return String(n).padStart(2, "0"); }
+
+  function formatDateInput(d) {
+    return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  }
+
+  function todayDate() {
+    dateInput.value = formatDateInput(new Date());
+  }
+
+  function changeDate(days) {
+    let d = dateInput.value ? new Date(dateInput.value) : new Date();
+    d.setDate(d.getDate() + days);
+    dateInput.value = formatDateInput(d);
+  }
+
+  function updatePreview() {
+    const val = roomInput.value.trim();
+    previewLocation.textContent = val ? val + " 診間" : "-- 診間";
+  }
+
+  function calFmt(d) {
+    return d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + "T" + pad(d.getHours()) + pad(d.getMinutes()) + "00";
+  }
+
+  function getClinicTime(base) {
+    let s = new Date(base), e = new Date(base);
+    switch (sessionSelect.value) {
+      case "AM":
+        s.setHours(8, 30, 0);
+        e.setHours(12, 0, 0);
+        break;
+      case "PM":
+        s.setHours(14, 0, 0);
+        e.setHours(17, 0, 0);
+        break;
+      default:
+        s.setHours(18, 0, 0);
+        e.setHours(21, 0, 0);
+    }
+    return { s, e };
+  }
+
+  function createCalendar() {
+    if (!dateInput.value) {
+      alert("請選擇日期");
+      return;
+    }
+    if (!roomInput.value) {
+      alert("請輸入診間");
+      return;
+    }
+    
+    // 儲存診間至 local storage
+    localStorage.setItem("room", roomInput.value);
+
+    // 處理日期格式 (解決 Safari/Firefox 解析 yyyy-mm-dd 的時區問題)
+    const dateParts = dateInput.value.split('-');
+    const baseDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+
+    let t = getClinicTime(baseDate);
+
+    let url = "https://calendar.google.com/calendar/render?action=TEMPLATE"
+      + "&text=" + encodeURIComponent("彰基胸腔內科門診")
+      + "&dates=" + calFmt(t.s) + "/" + calFmt(t.e)
+      + "&location=" + encodeURIComponent(roomInput.value + "診間")
+      + "&details=" + encodeURIComponent(noteInput.value);
+
+    window.open(url, "_blank");
+  }
 </script>
+
 </body>
 </html>
